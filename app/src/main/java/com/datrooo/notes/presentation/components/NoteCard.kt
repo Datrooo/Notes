@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +68,43 @@ fun NoteCard(
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            if (note.tags.isNotEmpty()) {
+                val displayTags = note.tags.take(3)
+                val remainingCount = note.tags.size - displayTags.size
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    displayTags.forEach { tag ->
+                        AssistChip(
+                            onClick = { },
+                            label = { Text(text = "#$tag") },
+                            colors = AssistChipDefaults.assistChipColors(
+                                labelColor = MaterialTheme.colorScheme.primary
+                            ),
+                            border = null,
+                            shape = MaterialTheme.shapes.small
+                        )
+                    }
+                    if (remainingCount > 0) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = "+$remainingCount",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

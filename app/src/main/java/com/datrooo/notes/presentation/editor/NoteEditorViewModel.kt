@@ -19,14 +19,22 @@ data class NoteEditorUiState(
     val noteId: Long? = null,
     val title: String = "",
     val content: String = "",
+    val tags: String = "",
     val isLoading: Boolean = false,
     val isExistingNote: Boolean = false
 ) {
-    val canSave: Boolean
-        get() = (title.isNotBlank() || content.isNotBlank()) && title.length <= NoteEditorViewModel.MAX_TITLE_LENGTH
-
     val isTitleTooLong: Boolean
         get() = title.length > NoteEditorViewModel.MAX_TITLE_LENGTH
+
+    val hasTooLongTags: Boolean
+        get() = tags.split(Regex("[,\\s]+"))
+            .map { it.trim().removePrefix("#") }
+            .any { it.length > NoteEditorViewModel.MAX_TAG_LENGTH }
+
+    val canSave: Boolean
+        get() = (title.isNotBlank() || content.isNotBlank()) &&
+                title.length <= NoteEditorViewModel.MAX_TITLE_LENGTH &&
+                !hasTooLongTags
 }
 
 class NoteEditorViewModel(
@@ -37,6 +45,7 @@ class NoteEditorViewModel(
 ) : ViewModel() {
     companion object {
         const val MAX_TITLE_LENGTH = 50
+        const val MAX_TAG_LENGTH = 20
 
         fun factory(
             repository: NotesRepository,
@@ -69,6 +78,7 @@ class NoteEditorViewModel(
                         current.copy(
                             title = note?.title.orEmpty(),
                             content = note?.content.orEmpty(),
+                            tags = note?.tags?.joinToString(" ") ?: "",
                             isLoading = false,
                             isExistingNote = note != null
                         )
@@ -90,6 +100,12 @@ class NoteEditorViewModel(
         }
     }
 
+    fun onTagsChanged(tags: String) {
+        _uiState.update { current ->
+            current.copy(tags = tags)
+        }
+    }
+
     fun save(onSaved: () -> Unit) {
         val currentState = _uiState.value
         if (!currentState.canSave) {
@@ -99,12 +115,17 @@ class NoteEditorViewModel(
         viewModelScope.launch {
             val title = currentState.title.trim()
             val content = currentState.content.trim()
+            val tags = currentState.tags
+                .split(Regex("[,\\s]+"))
+                .map { it.trim().removePrefix("#") }
+                .filter { it.isNotBlank() }
+                .distinct()
             val noteId = currentState.noteId
 
             if (noteId == null) {
-                createNoteUseCase(title = title, content = content)
+                createNoteUseCase(title = title, content = content, tags = tags)
             } else {
-                updateNoteUseCase(noteId = noteId, title = title, content = content)
+                updateNoteUseCase(noteId = noteId, title = title, content = content, tags = tags)
             }
 
             onSaved()

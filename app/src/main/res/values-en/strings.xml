@@ -29,9 +29,16 @@
     <string name="search_no_matches_desc">No matches in titles for \"%1$s\". Try shortening your query or clearing the search.</string>
     <string name="empty_list_desc">Create your first note using the button at the bottom of the screen. It will immediately appear in the list and be saved in the database.</string>
     <string name="clear_search">Clear search</string>
-    <string name="search_by_title">Search by title</string>
-    <string name="search_placeholder">For example, ideas or to-do list</string>
+    <string name="search_by_title">Search by title and tags</string>
+    <string name="search_placeholder">Ideas, todo list or tag</string>
     <string name="note_deleted_msg">Note \"%1$s\" deleted</string>
+
+    <!-- Tags -->
+    <string name="tags_label">Tags</string>
+    <string name="tags_placeholder">#work #study (separated by space or comma)</string>
+    <string name="tag_too_long">One of the tags is too long (max %1$d chars)</string>
+    <string name="filter_by_tag">Filter by tags</string>
+    <string name="all_tags">All</string>
 
     <!-- Note Editor -->
     <string name="edit_note_title">Edit note</string>

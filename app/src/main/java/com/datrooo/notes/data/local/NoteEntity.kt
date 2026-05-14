@@ -9,6 +9,7 @@ data class NoteEntity(
     val id: Long = 0,
     val title: String,
     val content: String,
+    val tags: String,
     val createdAt: Long,
     val updatedAt: Long
 )
