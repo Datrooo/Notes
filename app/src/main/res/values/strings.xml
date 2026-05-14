@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="no_title">Без заголовка</string>
+    <string name="empty_note">Пустая заметка</string>
+    <plurals name="char_count">
+        <item quantity="one">%1$d символ</item>
+        <item quantity="few">%1$d символа</item>
+        <item quantity="many">%1$d символов</item>
+        <item quantity="other">%1$d символа</item>
+    </plurals>
+
+    <!-- General -->
+    <string name="undo">Отменить</string>
+    <string name="back">Назад</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Редактировать</string>
+    <string name="save">Сохранить изменения</string>
+
+    <!-- Notes List -->
+    <string name="my_notes">Мои заметки</string>
+    <string name="notes_count_zero">Твоя база заметок только начинает заполняться</string>
+    <plurals name="notes_count_ready">
+        <item quantity="one">%1$d заметка под рукой</item>
+        <item quantity="few">%1$d заметки под рукой</item>
+        <item quantity="many">%1$d заметок под рукой</item>
+        <item quantity="other">%1$d заметки под рукой</item>
+    </plurals>
+    <string name="notes_search_results">%1$d из %2$d по запросу</string>
+    <string name="new_note_fab">Новая заметка</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="no_notes_yet">Пока нет заметок</string>
+    <string name="search_no_matches_desc">По запросу «%1$s» нет совпадений в заголовках. Попробуй сократить запрос или очистить поиск.</string>
+    <string name="empty_list_desc">Создай первую заметку через кнопку внизу экрана. Она сразу появится в списке и сохранится в базе.</string>
+    <string name="clear_search">Сбросить поиск</string>
+    <string name="search_by_title">Поиск по заголовку</string>
+    <string name="search_placeholder">Например, идеи или список дел</string>
+    <string name="note_deleted_msg">Заметка «%1$s» удалена</string>
+
+    <!-- Note Editor -->
+    <string name="edit_note_title">Редактирование</string>
+    <string name="new_note_title">Новая заметка</string>
+    <string name="title_label">Заголовок</string>
+    <string name="title_placeholder">Например, идеи для проекта</string>
+    <string name="content_label">Текст заметки</string>
+    <string name="content_placeholder">Запиши мысль, план или наблюдение</string>
+    <string name="create_note_button">Создать заметку</string>
+    <string name="title_too_long">Заголовок слишком длинный (макс. %1$d симв.)</string>
+    <string name="char_count_total">Символов: %1$d</string>
+
+    <!-- Note Details -->
+    <string name="view_note_title">Просмотр заметки</string>
+    <string name="delete_dialog_title">Удалить заметку?</string>
+    <string name="delete_dialog_desc">Это действие нельзя отменить.</string>
+    <string name="note_not_found">Заметка не найдена.</string>
+    <string name="updated_at">Обновлено %1$s</string>
+    <string name="exit_press_again">Нажмите еще раз для выхода</string>
+    <string name="note_content_header">Содержимое</string>
+    <string name="empty_content_desc">Текст заметки отсутствует.</string>
+</resources>

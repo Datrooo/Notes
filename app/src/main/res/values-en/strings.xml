@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="no_title">No title</string>
+    <string name="empty_note">Empty note</string>
+    <plurals name="char_count">
+        <item quantity="one">%1$d character</item>
+        <item quantity="other">%1$d characters</item>
+    </plurals>
+
+    <!-- General -->
+    <string name="undo">Undo</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="save">Save changes</string>
+
+    <!-- Notes List -->
+    <string name="my_notes">My Notes</string>
+    <string name="notes_count_zero">Your note database is just beginning to fill up</string>
+    <plurals name="notes_count_ready">
+        <item quantity="one">%1$d note at hand</item>
+        <item quantity="other">%1$d notes at hand</item>
+    </plurals>
+    <string name="notes_search_results">%1$d of %2$d by request</string>
+    <string name="new_note_fab">New note</string>
+    <string name="nothing_found">Nothing found</string>
+    <string name="no_notes_yet">No notes yet</string>
+    <string name="search_no_matches_desc">No matches in titles for \"%1$s\". Try shortening your query or clearing the search.</string>
+    <string name="empty_list_desc">Create your first note using the button at the bottom of the screen. It will immediately appear in the list and be saved in the database.</string>
+    <string name="clear_search">Clear search</string>
+    <string name="search_by_title">Search by title</string>
+    <string name="search_placeholder">For example, ideas or to-do list</string>
+    <string name="note_deleted_msg">Note \"%1$s\" deleted</string>
+
+    <!-- Note Editor -->
+    <string name="edit_note_title">Edit note</string>
+    <string name="new_note_title">New note</string>
+    <string name="title_label">Title</string>
+    <string name="title_placeholder">For example, project ideas</string>
+    <string name="content_label">Note text</string>
+    <string name="content_placeholder">Write down a thought, plan or observation</string>
+    <string name="create_note_button">Create note</string>
+    <string name="title_too_long">Title is too long (max %1$d chars)</string>
+    <string name="char_count_total">Characters: %1$d</string>
+
+    <!-- Note Details -->
+    <string name="view_note_title">View note</string>
+    <string name="delete_dialog_title">Delete note?</string>
+    <string name="delete_dialog_desc">This action cannot be undone.</string>
+    <string name="note_not_found">Note not found.</string>
+    <string name="updated_at">Updated %1$s</string>
+    <string name="exit_press_again">Press again to exit</string>
+    <string name="note_content_header">Content</string>
+    <string name="empty_content_desc">No note content.</string>
+</resources>
