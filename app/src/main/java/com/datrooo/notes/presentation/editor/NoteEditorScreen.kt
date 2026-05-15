@@ -164,7 +164,7 @@ fun NoteEditorScreen(
                         Text(
                             text = stringResource(
                                 R.string.char_count_total,
-                                uiState.value.title.length + uiState.value.content.length
+                                uiState.value.content.length
                             ),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
