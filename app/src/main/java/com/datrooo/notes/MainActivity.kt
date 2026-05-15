@@ -8,11 +8,11 @@ import com.datrooo.notes.ui.theme.NotesTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val repository = (application as NotesApplication).container.notesRepository
+        val appContainer = (application as NotesApplication).container
 
         setContent {
             NotesTheme {
-                NotesApp(repository = repository)
+                NotesApp(appContainer = appContainer)
             }
         }
     }

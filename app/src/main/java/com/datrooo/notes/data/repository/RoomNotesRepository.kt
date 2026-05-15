@@ -5,6 +5,7 @@ import com.datrooo.notes.data.local.NoteEntity
 import com.datrooo.notes.data.mapper.toDomain
 import com.datrooo.notes.data.mapper.toEntity
 import com.datrooo.notes.domain.model.Note
+import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.domain.repository.NotesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,12 +25,13 @@ class RoomNotesRepository(
         }
     }
 
-    override suspend fun createNote(title: String, content: String): Note {
+    override suspend fun createNote(title: String, content: List<NoteContentBlock>, tags: List<String>): Note {
         val now = System.currentTimeMillis()
         val noteId = noteDao.insertNote(
             NoteEntity(
                 title = title,
                 content = content,
+                tags = tags,
                 createdAt = now,
                 updatedAt = now
             )
@@ -47,11 +49,12 @@ class RoomNotesRepository(
         }.toDomain()
     }
 
-    override suspend fun updateNote(noteId: Long, title: String, content: String): Note? {
+    override suspend fun updateNote(noteId: Long, title: String, content: List<NoteContentBlock>, tags: List<String>): Note? {
         val currentNote = noteDao.getNoteById(noteId) ?: return null
         val updatedNote = currentNote.copy(
             title = title,
             content = content,
+            tags = tags,
             updatedAt = System.currentTimeMillis()
         )
 

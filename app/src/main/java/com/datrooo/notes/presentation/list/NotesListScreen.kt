@@ -4,15 +4,22 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
@@ -76,7 +83,7 @@ fun NotesListScreen(
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = exitMessage,
-                    duration = SnackbarDuration.Short
+                    duration = SnackbarDuration.Short,
                 )
                 delay(2000)
                 backPressedOnce = false
@@ -89,7 +96,7 @@ fun NotesListScreen(
             val result = snackbarHostState.showSnackbar(
                 message = deletedMessage,
                 actionLabel = undoLabel,
-                duration = SnackbarDuration.Long
+                duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) {
                 viewModel.restoreDeletedNote(deletedNotePayload)
@@ -167,6 +174,15 @@ fun NotesListScreen(
                             onSearchQueryChanged = viewModel::onSearchQueryChanged
                         )
                     }
+                    if (uiState.value.availableTags.isNotEmpty()) {
+                        item {
+                            TagFilterSection(
+                                availableTags = uiState.value.availableTags,
+                                selectedTags = uiState.value.selectedTags,
+                                onTagToggle = viewModel::onTagToggle
+                            )
+                        }
+                    }
                     if (uiState.value.notes.isEmpty()) {
                         item {
                             EmptyNotesState(
@@ -189,6 +205,91 @@ fun NotesListScreen(
                                 }
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TagFilterSection(
+    availableTags: List<String>,
+    selectedTags: Set<String>,
+    onTagToggle: (String) -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(value = false) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    if (!isExpanded) {
+                        val unselectedTags = availableTags.filter { !selectedTags.contains(it) }
+                        val tagsToShow = (selectedTags.toList() + unselectedTags.take(3)).distinct()
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            items(tagsToShow) { tag ->
+                                FilterChip(
+                                    selected = selectedTags.contains(tag),
+                                    onClick = { onTagToggle(tag) },
+                                    label = { Text(text = "#$tag") },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                )
+                            }
+                        }
+                    } else {
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            availableTags.forEach { tag ->
+                                FilterChip(
+                                    selected = selectedTags.contains(tag),
+                                    onClick = { onTagToggle(tag) },
+                                    label = { Text(text = "#$tag") },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    ) {
+                        Text(
+                            text = if (isExpanded) "−" else "+",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

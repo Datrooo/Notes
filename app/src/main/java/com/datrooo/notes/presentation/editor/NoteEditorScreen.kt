@@ -1,5 +1,10 @@
 package com.datrooo.notes.presentation.editor
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,9 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -23,12 +33,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
+import coil3.compose.AsyncImage
 import com.datrooo.notes.R
+import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.presentation.components.NotesBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,9 +59,40 @@ fun NoteEditorScreen(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    var fullScreenImageUri by remember { mutableStateOf<String?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { viewModel.addImageBlock(it.toString()) }
+    }
 
     LaunchedEffect(uiState.value.content) {
         scrollState.animateScrollTo(scrollState.maxValue)
+    }
+
+    if (fullScreenImageUri != null) {
+        Dialog(
+            onDismissRequest = {},
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(androidx.compose.ui.graphics.Color.Black)
+                    .clickable { 
+                        fullScreenImageUri = null 
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = fullScreenImageUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -66,6 +116,16 @@ fun NoteEditorScreen(
                     navigationIcon = {
                         TextButton(onClick = onNavigateBack) {
                             Text(text = stringResource(R.string.back))
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.AddPhotoAlternate,
+                                contentDescription = "Add Image"
+                            )
                         }
                     }
                 )
@@ -125,22 +185,82 @@ fun NoteEditorScreen(
                                 }
                             }
                         )
+
+                        uiState.value.content.forEachIndexed { index, block ->
+                            when (block) {
+                                is NoteContentBlock.Text -> {
+                                    OutlinedTextField(
+                                        value = block.text,
+                                        onValueChange = { 
+                                            viewModel.onContentBlockChanged(index, NoteContentBlock.Text(it)) 
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = {
+                                            if (index == 0) Text(text = stringResource(R.string.content_label))
+                                        },
+                                        placeholder = {
+                                            if (index == 0) Text(text = stringResource(R.string.content_placeholder))
+                                        }
+                                    )
+                                }
+                                is NoteContentBlock.Image -> {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { fullScreenImageUri = block.uri },
+                                            shape = MaterialTheme.shapes.medium
+                                        ) {
+                                            AsyncImage(
+                                                model = block.uri,
+                                                contentDescription = null,
+                                                modifier = Modifier.fillMaxWidth().height(200.dp),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { viewModel.removeBlock(index) },
+                                            modifier = Modifier.align(Alignment.TopEnd)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Remove Image",
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         OutlinedTextField(
-                            value = uiState.value.content,
-                            onValueChange = viewModel::onContentChanged,
+                            value = uiState.value.tags,
+                            onValueChange = viewModel::onTagsChanged,
                             modifier = Modifier.fillMaxWidth(),
-                            minLines = 10,
                             label = {
-                                Text(text = stringResource(R.string.content_label))
+                                Text(text = stringResource(R.string.tags_label))
                             },
                             placeholder = {
-                                Text(text = stringResource(R.string.content_placeholder))
+                                Text(text = stringResource(R.string.tags_placeholder))
+                            },
+                            singleLine = true,
+                            isError = uiState.value.hasTooLongTags,
+                            supportingText = {
+                                if (uiState.value.hasTooLongTags) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.tag_too_long,
+                                            NoteEditorViewModel.MAX_TAG_LENGTH
+                                        ),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
                         )
                         Text(
                             text = stringResource(
                                 R.string.char_count_total,
-                                uiState.value.title.length + uiState.value.content.length
+                                uiState.value.content.sumOf { (it as? NoteContentBlock.Text)?.text?.length ?: 0 }
                             ),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

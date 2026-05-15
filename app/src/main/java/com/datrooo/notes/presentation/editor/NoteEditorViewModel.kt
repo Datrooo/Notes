@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.datrooo.notes.data.local.ImageStorage
+import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.domain.repository.NotesRepository
 import com.datrooo.notes.domain.usecase.CreateNoteUseCase
 import com.datrooo.notes.domain.usecase.GetNoteUseCase
@@ -18,28 +20,39 @@ import kotlinx.coroutines.launch
 data class NoteEditorUiState(
     val noteId: Long? = null,
     val title: String = "",
-    val content: String = "",
+    val content: List<NoteContentBlock> = listOf(NoteContentBlock.Text("")),
+    val tags: String = "",
     val isLoading: Boolean = false,
     val isExistingNote: Boolean = false
 ) {
     val canSave: Boolean
-        get() = (title.isNotBlank() || content.isNotBlank()) && title.length <= NoteEditorViewModel.MAX_TITLE_LENGTH
+        get() = (title.isNotBlank() || content.any { block -> (block as? NoteContentBlock.Text)?.text?.isNotBlank() == true } || content.any { it is NoteContentBlock.Image }) &&
+                title.length <= NoteEditorViewModel.MAX_TITLE_LENGTH &&
+                !hasTooLongTags
 
     val isTitleTooLong: Boolean
         get() = title.length > NoteEditorViewModel.MAX_TITLE_LENGTH
+
+    val hasTooLongTags: Boolean
+        get() = tags.split(Regex("[,\\s]+"))
+            .map { it.trim().removePrefix("#") }
+            .any { it.length > NoteEditorViewModel.MAX_TAG_LENGTH }
 }
 
 class NoteEditorViewModel(
     noteId: Long?,
     private val getNoteUseCase: GetNoteUseCase,
     private val createNoteUseCase: CreateNoteUseCase,
-    private val updateNoteUseCase: UpdateNoteUseCase
+    private val updateNoteUseCase: UpdateNoteUseCase,
+    private val imageStorage: ImageStorage
 ) : ViewModel() {
     companion object {
         const val MAX_TITLE_LENGTH = 50
+        const val MAX_TAG_LENGTH = 20
 
         fun factory(
             repository: NotesRepository,
+            imageStorage: ImageStorage,
             noteId: Long?
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -47,7 +60,8 @@ class NoteEditorViewModel(
                     noteId = noteId,
                     getNoteUseCase = GetNoteUseCase(repository),
                     createNoteUseCase = CreateNoteUseCase(repository),
-                    updateNoteUseCase = UpdateNoteUseCase(repository)
+                    updateNoteUseCase = UpdateNoteUseCase(repository),
+                    imageStorage = imageStorage
                 )
             }
         }
@@ -68,7 +82,8 @@ class NoteEditorViewModel(
                     _uiState.update { current ->
                         current.copy(
                             title = note?.title.orEmpty(),
-                            content = note?.content.orEmpty(),
+                            content = note?.content ?: listOf(NoteContentBlock.Text("")),
+                            tags = note?.tags?.joinToString(" ") ?: "",
                             isLoading = false,
                             isExistingNote = note != null
                         )
@@ -84,9 +99,38 @@ class NoteEditorViewModel(
         }
     }
 
-    fun onContentChanged(content: String) {
+    fun onContentBlockChanged(index: Int, block: NoteContentBlock) {
         _uiState.update { current ->
-            current.copy(content = content)
+            val newContent = current.content.toMutableList()
+            newContent[index] = block
+            current.copy(content = newContent)
+        }
+    }
+
+    fun addImageBlock(uri: String) {
+        viewModelScope.launch {
+            val internalUri = imageStorage.saveImageToInternalStorage(uri) ?: return@launch
+            _uiState.update { current ->
+                val newContent = current.content.toMutableList()
+                newContent.add(NoteContentBlock.Image(internalUri))
+                newContent.add(NoteContentBlock.Text(""))
+                current.copy(content = newContent)
+            }
+        }
+    }
+
+    fun removeBlock(index: Int) {
+        _uiState.update { current ->
+            if (current.content.size <= 1) return@update current
+            val newContent = current.content.toMutableList()
+            newContent.removeAt(index)
+            current.copy(content = newContent)
+        }
+    }
+
+    fun onTagsChanged(tags: String) {
+        _uiState.update { current ->
+            current.copy(tags = tags)
         }
     }
 
@@ -98,13 +142,18 @@ class NoteEditorViewModel(
 
         viewModelScope.launch {
             val title = currentState.title.trim()
-            val content = currentState.content.trim()
+            val content = currentState.content
+            val tags = currentState.tags
+                .split(Regex("[,\\s]+"))
+                .map { it.trim().removePrefix("#") }
+                .filter { it.isNotBlank() }
+                .distinct()
             val noteId = currentState.noteId
 
             if (noteId == null) {
-                createNoteUseCase(title = title, content = content)
+                createNoteUseCase(title = title, content = content, tags = tags)
             } else {
-                updateNoteUseCase(noteId = noteId, title = title, content = content)
+                updateNoteUseCase(noteId = noteId, title = title, content = content, tags = tags)
             }
 
             onSaved()
