@@ -1,22 +1,22 @@
 package com.datrooo.notes.presentation.editor
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.datrooo.notes.data.local.ImageStorage
 import com.datrooo.notes.domain.model.NoteContentBlock
-import com.datrooo.notes.domain.repository.NotesRepository
 import com.datrooo.notes.domain.usecase.CreateNoteUseCase
 import com.datrooo.notes.domain.usecase.GetNoteUseCase
 import com.datrooo.notes.domain.usecase.UpdateNoteUseCase
+import com.datrooo.notes.navigation.NotesDestination
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class NoteEditorUiState(
     val noteId: Long? = null,
@@ -41,8 +41,9 @@ data class NoteEditorUiState(
             .any { it.length > NoteEditorViewModel.MAX_TAG_LENGTH }
 }
 
-class NoteEditorViewModel(
-    noteId: Long?,
+@HiltViewModel
+class NoteEditorViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val getNoteUseCase: GetNoteUseCase,
     private val createNoteUseCase: CreateNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
@@ -51,23 +52,10 @@ class NoteEditorViewModel(
     companion object {
         const val MAX_TITLE_LENGTH = 50
         const val MAX_TAG_LENGTH = 20
-
-        fun factory(
-            repository: NotesRepository,
-            imageStorage: ImageStorage,
-            noteId: Long?
-        ): ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                NoteEditorViewModel(
-                    noteId = noteId,
-                    getNoteUseCase = GetNoteUseCase(repository),
-                    createNoteUseCase = CreateNoteUseCase(repository),
-                    updateNoteUseCase = UpdateNoteUseCase(repository),
-                    imageStorage = imageStorage
-                )
-            }
-        }
     }
+
+    private val noteId: Long? = savedStateHandle.get<Long>(NotesDestination.NOTE_ID_ARG)?.takeIf { it != NotesDestination.EMPTY_NOTE_ID }
+
     private val _uiState = MutableStateFlow(
         NoteEditorUiState(
             noteId = noteId,

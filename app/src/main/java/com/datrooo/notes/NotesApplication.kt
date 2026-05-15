@@ -1,13 +1,8 @@
 package com.datrooo.notes
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-class NotesApplication : Application() {
-    lateinit var container: AppContainer
-        private set
+@HiltAndroidApp
+class NotesApplication : Application()
 
-    override fun onCreate() {
-        super.onCreate()
-        container = DefaultAppContainer(applicationContext)
-    }
-}

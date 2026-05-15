@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -74,6 +76,11 @@ fun NoteEditorScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+
+    val errorOpeningImageMsg = stringResource(R.string.error_opening_image)
+    val imageSavedMsg = stringResource(R.string.image_saved_to_gallery)
+    val imageSaveFailedMsg = stringResource(R.string.image_save_failed)
+
     var tempCameraUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var showImageSourceMenu by remember { mutableStateOf(false) }
     
@@ -158,6 +165,7 @@ fun NoteEditorScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         NotesBackground()
         Scaffold(
+            modifier = Modifier.fillMaxSize().imePadding(),
             containerColor = androidx.compose.ui.graphics.Color.Transparent,
             topBar = {
                 TopAppBar(
@@ -188,11 +196,31 @@ fun NoteEditorScreen(
                                 )
                             }
                         }
+                    }
+                )
+            },
+            bottomBar = {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding(),
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Box {
                             IconButton(onClick = { showImageSourceMenu = true }) {
                                 Icon(
                                     imageVector = Icons.Default.AddPhotoAlternate,
-                                    contentDescription = "Add Image"
+                                    contentDescription = "Add Image",
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                             DropdownMenu(
@@ -218,7 +246,7 @@ fun NoteEditorScreen(
                             }
                         }
                     }
-                )
+                }
             }
         ) { innerPadding ->
             if (uiState.value.isLoading) {
@@ -326,7 +354,7 @@ fun NoteEditorScreen(
                                                         val shareableUri = viewModel.getShareableUri(block.uri)
                                                         openImage(shareableUri)
                                                     } catch (_: Exception) {
-                                                        Toast.makeText(context, R.string.error_opening_image, Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, errorOpeningImageMsg, Toast.LENGTH_SHORT).show()
                                                     }
                                                 },
                                             shape = MaterialTheme.shapes.medium
@@ -350,9 +378,9 @@ fun NoteEditorScreen(
                                                     IconButton(
                                                         onClick = { 
                                                             if (viewModel.saveImageToGallery(block.uri)) {
-                                                                Toast.makeText(context, R.string.image_saved_to_gallery, Toast.LENGTH_SHORT).show()
+                                                                Toast.makeText(context, imageSavedMsg, Toast.LENGTH_SHORT).show()
                                                             } else {
-                                                                Toast.makeText(context, R.string.image_save_failed, Toast.LENGTH_SHORT).show()
+                                                                Toast.makeText(context, imageSaveFailedMsg, Toast.LENGTH_SHORT).show()
                                                             }
                                                         }
                                                     ) {

@@ -1,14 +1,13 @@
 package com.datrooo.notes.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.datrooo.notes.AppContainer
 import com.datrooo.notes.presentation.details.NoteDetailsScreen
 import com.datrooo.notes.presentation.details.NoteDetailsViewModel
 import com.datrooo.notes.presentation.editor.NoteEditorScreen
@@ -18,20 +17,14 @@ import com.datrooo.notes.presentation.list.NotesListViewModel
 
 @Composable
 fun NotesNavHost(
-    navController: androidx.navigation.NavHostController = rememberNavController(),
-    appContainer: AppContainer
+    navController: androidx.navigation.NavHostController = rememberNavController()
 ) {
-    val repository = appContainer.notesRepository
-    val imageStorage = appContainer.imageStorage
-
     NavHost(
         navController = navController,
         startDestination = NotesDestination.LIST_ROUTE
     ) {
         composable(route = NotesDestination.LIST_ROUTE) { backStackEntry ->
-            val viewModel: NotesListViewModel = viewModel(
-                factory = NotesListViewModel.factory(repository)
-            )
+            val viewModel: NotesListViewModel = hiltViewModel()
             val deletedNotePayload = backStackEntry.savedStateHandle
                 .getStateFlow<DeletedNotePayload?>(NotesDestination.DELETED_NOTE_PAYLOAD_KEY, null)
                 .collectAsStateWithLifecycle()
@@ -56,13 +49,8 @@ fun NotesNavHost(
             arguments = listOf(
                 navArgument(NotesDestination.NOTE_ID_ARG) { type = NavType.LongType }
             )
-        ) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getLong(NotesDestination.NOTE_ID_ARG)
-                ?: NotesDestination.EMPTY_NOTE_ID
-
-            val viewModel: NoteDetailsViewModel = viewModel(
-                factory = NoteDetailsViewModel.factory(repository, imageStorage, noteId)
-            )
+        ) { _ ->
+            val viewModel: NoteDetailsViewModel = hiltViewModel()
 
             NoteDetailsScreen(
                 viewModel = viewModel,
@@ -87,14 +75,8 @@ fun NotesNavHost(
                     defaultValue = NotesDestination.EMPTY_NOTE_ID
                 }
             )
-        ) { backStackEntry ->
-            val rawNoteId = backStackEntry.arguments?.getLong(NotesDestination.NOTE_ID_ARG)
-                ?: NotesDestination.EMPTY_NOTE_ID
-            val noteId = rawNoteId.takeIf { it != NotesDestination.EMPTY_NOTE_ID }
-
-            val viewModel: NoteEditorViewModel = viewModel(
-                factory = NoteEditorViewModel.factory(repository, imageStorage, noteId)
-            )
+        ) { _ ->
+            val viewModel: NoteEditorViewModel = hiltViewModel()
 
             NoteEditorScreen(
                 viewModel = viewModel,
