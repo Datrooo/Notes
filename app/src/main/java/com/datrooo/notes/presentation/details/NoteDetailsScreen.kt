@@ -65,6 +65,8 @@ fun NoteDetailsScreen(
     var isTagsExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    val errorOpeningImageMsg = stringResource(R.string.error_opening_image)
+
     val showAppPicker = remember { mutableStateOf(false) }
     val pendingUriToOpen = remember { mutableStateOf<android.net.Uri?>(null) }
 
@@ -92,8 +94,8 @@ fun NoteDetailsScreen(
     if (showAppPicker.value && pendingUriToOpen.value != null) {
         AppSelectionDialog(
             viewers = viewModel.getAvailableViewers(),
-            onAppSelected = { pkg, remember ->
-                if (remember) {
+            onAppSelected = { pkg, rememberChoice ->
+                if (rememberChoice) {
                     viewModel.setPreferredPackage(pkg)
                 }
                 showAppPicker.value = false
@@ -358,7 +360,7 @@ fun NoteDetailsScreen(
                                                             val shareableUri = viewModel.getShareableUri(block.uri)
                                                             openImage(shareableUri)
                                                         } catch (_: Exception) {
-                                                            Toast.makeText(context, R.string.error_opening_image, Toast.LENGTH_SHORT).show()
+                                                            Toast.makeText(context, errorOpeningImageMsg, Toast.LENGTH_SHORT).show()
                                                         }
                                                     },
                                                 shape = MaterialTheme.shapes.medium

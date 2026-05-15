@@ -1,35 +1,37 @@
 package com.datrooo.notes.presentation.details
 
 import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.datrooo.notes.data.local.ImageStorage
 import com.datrooo.notes.domain.model.Note
-import com.datrooo.notes.domain.repository.NotesRepository
 import com.datrooo.notes.domain.usecase.DeleteNoteUseCase
 import com.datrooo.notes.domain.usecase.GetNoteUseCase
 import com.datrooo.notes.navigation.DeletedNotePayload
+import com.datrooo.notes.navigation.NotesDestination
 import com.datrooo.notes.navigation.toDeletedNotePayload
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class NoteDetailsUiState(
     val isLoading: Boolean = true,
     val note: Note? = null,
 )
 
-class NoteDetailsViewModel(
-    private val noteId: Long,
+@HiltViewModel
+class NoteDetailsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val getNoteUseCase: GetNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val imageStorage: ImageStorage
 ) : ViewModel() {
+    private val noteId: Long = checkNotNull(savedStateHandle[NotesDestination.NOTE_ID_ARG])
     private val _uiState = MutableStateFlow(NoteDetailsUiState())
     val uiState: StateFlow<NoteDetailsUiState> = _uiState.asStateFlow()
 
@@ -64,23 +66,6 @@ class NoteDetailsViewModel(
             val deletedNote = _uiState.value.note ?: return@launch
             deleteNoteUseCase(noteId)
             onDeleted(deletedNote.toDeletedNotePayload())
-        }
-    }
-
-    companion object {
-        fun factory(
-            repository: NotesRepository,
-            imageStorage: ImageStorage,
-            noteId: Long
-        ): ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                NoteDetailsViewModel(
-                    noteId = noteId,
-                    getNoteUseCase = GetNoteUseCase(repository),
-                    deleteNoteUseCase = DeleteNoteUseCase(repository),
-                    imageStorage = imageStorage
-                )
-            }
         }
     }
 }

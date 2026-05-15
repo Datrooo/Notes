@@ -32,7 +32,7 @@
     <string name="empty_list_desc">Create your first note using the button at the bottom of the screen. It will immediately appear in the list and be saved in the database.</string>
     <string name="clear_search">Clear search</string>
     <string name="search_by_title">Search by title and tags</string>
-    <string name="search_placeholder">Ideas, todo list or #tag</string>
+    <string name="search_placeholder">Ideas, todo list or tag</string>
     <string name="note_deleted_msg">Note \"%1$s\" deleted</string>
 
     <!-- Tags -->

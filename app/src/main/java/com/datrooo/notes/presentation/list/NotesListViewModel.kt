@@ -1,21 +1,19 @@
 package com.datrooo.notes.presentation.list
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.datrooo.notes.domain.model.Note
 import com.datrooo.notes.domain.model.NoteContentBlock
-import com.datrooo.notes.domain.repository.NotesRepository
 import com.datrooo.notes.domain.usecase.GetNotesUseCase
 import com.datrooo.notes.domain.usecase.RestoreNoteUseCase
 import com.datrooo.notes.navigation.DeletedNotePayload
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class NotesListUiState(
     val isLoading: Boolean = true,
@@ -26,7 +24,8 @@ data class NotesListUiState(
     val totalNotesCount: Int = 0
 )
 
-class NotesListViewModel(
+@HiltViewModel
+class NotesListViewModel @Inject constructor(
     private val getNotesUseCase: GetNotesUseCase,
     private val restoreNoteUseCase: RestoreNoteUseCase
 ) : ViewModel() {
@@ -100,17 +99,6 @@ class NotesListViewModel(
                 availableTags = allAvailableTags,
                 totalNotesCount = allNotes.size
             )
-        }
-    }
-
-    companion object {
-        fun factory(repository: NotesRepository): ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                NotesListViewModel(
-                    getNotesUseCase = GetNotesUseCase(repository),
-                    restoreNoteUseCase = RestoreNoteUseCase(repository)
-                )
-            }
         }
     }
 }
