@@ -1,5 +1,6 @@
 package com.datrooo.notes.presentation.editor
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,12 +19,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -60,11 +64,31 @@ fun NoteEditorScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     var fullScreenImageUri by remember { mutableStateOf<String?>(null) }
+    var tempCameraUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var showImageSourceMenu by remember { mutableStateOf(false) }
 
-    val launcher = rememberLauncherForActivityResult(
+    val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let { viewModel.addImageBlock(it.toString()) }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            tempCameraUri?.let { viewModel.addImageBlock(it.toString()) }
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = viewModel.getTempCameraUri()
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        }
     }
 
     LaunchedEffect(uiState.value.content) {
@@ -119,13 +143,34 @@ fun NoteEditorScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
-                            launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.AddPhotoAlternate,
-                                contentDescription = "Add Image"
-                            )
+                        Box {
+                            IconButton(onClick = { showImageSourceMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.AddPhotoAlternate,
+                                    contentDescription = "Add Image"
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showImageSourceMenu,
+                                onDismissRequest = { showImageSourceMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.gallery)) },
+                                    leadingIcon = { Icon(Icons.Default.AddPhotoAlternate, null) },
+                                    onClick = {
+                                        showImageSourceMenu = false
+                                        galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.camera)) },
+                                    leadingIcon = { Icon(Icons.Default.PhotoCamera, null) },
+                                    onClick = {
+                                        showImageSourceMenu = false
+                                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
+                                )
+                            }
                         }
                     }
                 )

@@ -1,15 +1,12 @@
 package com.datrooo.notes.data.local
 
 import android.content.Context
+import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import java.io.File
 
 class ImageStorage(private val context: Context) {
-    
-    /**
-     * Copies the image from the given URI to the app's internal storage.
-     * Returns the URI string of the saved image file.
-     */
     fun saveImageToInternalStorage(uriString: String): String? {
         return try {
             val uri = uriString.toUri()
@@ -28,5 +25,14 @@ class ImageStorage(private val context: Context) {
             e.printStackTrace()
             null
         }
+    }
+    fun getTempCameraUri(): Uri {
+        val fileName = "temp_camera_${System.currentTimeMillis()}.jpg"
+        val file = File(context.cacheDir, fileName)
+        return FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
     }
 }
