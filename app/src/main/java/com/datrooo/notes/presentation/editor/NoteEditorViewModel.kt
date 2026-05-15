@@ -134,6 +134,12 @@ class NoteEditorViewModel(
         }
     }
 
+    fun onTagsChanged(tags: String) {
+        _uiState.update { current ->
+            current.copy(tags = tags)
+        }
+    }
+
     fun save(onSaved: () -> Unit) {
         val currentState = _uiState.value
         if (!currentState.canSave) {
