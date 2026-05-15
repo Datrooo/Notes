@@ -24,12 +24,13 @@ class RoomNotesRepository(
         }
     }
 
-    override suspend fun createNote(title: String, content: String): Note {
+    override suspend fun createNote(title: String, content: String, tags: List<String>): Note {
         val now = System.currentTimeMillis()
         val noteId = noteDao.insertNote(
             NoteEntity(
                 title = title,
                 content = content,
+                tags = tags.joinToString(","),
                 createdAt = now,
                 updatedAt = now
             )
@@ -47,11 +48,12 @@ class RoomNotesRepository(
         }.toDomain()
     }
 
-    override suspend fun updateNote(noteId: Long, title: String, content: String): Note? {
+    override suspend fun updateNote(noteId: Long, title: String, content: String, tags: List<String>): Note? {
         val currentNote = noteDao.getNoteById(noteId) ?: return null
         val updatedNote = currentNote.copy(
             title = title,
             content = content,
+            tags = tags.joinToString(","),
             updatedAt = System.currentTimeMillis()
         )
 

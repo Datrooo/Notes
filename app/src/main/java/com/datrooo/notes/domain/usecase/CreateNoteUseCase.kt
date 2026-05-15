@@ -6,7 +6,7 @@ import com.datrooo.notes.domain.repository.NotesRepository
 class CreateNoteUseCase(
     private val repository: NotesRepository
 ) {
-    suspend operator fun invoke(title: String, content: String): Note {
-        return repository.createNote(title = title, content = content)
+    suspend operator fun invoke(title: String, content: String, tags: List<String>): Note {
+        return repository.createNote(title = title, content = content, tags = tags)
     }
 }

@@ -7,6 +7,7 @@ data class DeletedNotePayload(
     val id: Long,
     val title: String,
     val content: String,
+    val tags: List<String>,
     val createdAt: Long,
     val updatedAt: Long
 ) : Serializable {
@@ -15,6 +16,7 @@ data class DeletedNotePayload(
             id = id,
             title = title,
             content = content,
+            tags = tags,
             createdAt = createdAt,
             updatedAt = updatedAt
         )
@@ -26,6 +28,7 @@ fun Note.toDeletedNotePayload(): DeletedNotePayload {
         id = id,
         title = title,
         content = content,
+        tags = tags,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

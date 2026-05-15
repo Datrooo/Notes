@@ -18,7 +18,9 @@ class DefaultAppContainer(
             context,
             NotesDatabase::class.java,
             NotesDatabase.DATABASE_NAME
-        ).build()
+        )
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     override val notesRepository: NotesRepository by lazy {

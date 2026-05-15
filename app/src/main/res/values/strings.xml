@@ -33,9 +33,16 @@
     <string name="search_no_matches_desc">По запросу «%1$s» нет совпадений в заголовках. Попробуй сократить запрос или очистить поиск.</string>
     <string name="empty_list_desc">Создай первую заметку через кнопку внизу экрана. Она сразу появится в списке и сохранится в базе.</string>
     <string name="clear_search">Сбросить поиск</string>
-    <string name="search_by_title">Поиск по заголовку</string>
-    <string name="search_placeholder">Например, идеи или список дел</string>
+    <string name="search_by_title">Поиск по заголовку и тегам</string>
+    <string name="search_placeholder">Идеи, список дел или тег</string>
     <string name="note_deleted_msg">Заметка «%1$s» удалена</string>
+
+    <!-- Tags -->
+    <string name="tags_label">Теги</string>
+    <string name="tags_placeholder">#работа #учеба (через пробел или запятую)</string>
+    <string name="tag_too_long">Один из тегов слишком длинный (макс. %1$d симв.)</string>
+    <string name="filter_by_tag">Фильтр по тегам</string>
+    <string name="all_tags">Все</string>
 
     <!-- Note Editor -->
     <string name="edit_note_title">Редактирование</string>
