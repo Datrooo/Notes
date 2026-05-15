@@ -213,90 +213,6 @@ fun NotesListScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TagFilterSection(
-    availableTags: List<String>,
-    selectedTags: Set<String>,
-    onTagToggle: (String) -> Unit
-) {
-    var isExpanded by remember { mutableStateOf(value = false) }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-        shape = MaterialTheme.shapes.extraLarge
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    if (!isExpanded) {
-                        val unselectedTags = availableTags.filter { !selectedTags.contains(it) }
-                        val tagsToShow = (selectedTags.toList() + unselectedTags.take(3)).distinct()
-
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            items(tagsToShow) { tag ->
-                                FilterChip(
-                                    selected = selectedTags.contains(tag),
-                                    onClick = { onTagToggle(tag) },
-                                    label = { Text(text = "#$tag") },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                )
-                            }
-                        }
-                    } else {
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            availableTags.forEach { tag ->
-                                FilterChip(
-                                    selected = selectedTags.contains(tag),
-                                    onClick = { onTagToggle(tag) },
-                                    label = { Text(text = "#$tag") },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-                IconButton(onClick = { isExpanded = !isExpanded }) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = androidx.compose.foundation.shape.CircleShape
-                    ) {
-                        Text(
-                            text = if (isExpanded) "−" else "+",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun EmptyNotesState(
@@ -350,6 +266,7 @@ private fun EmptyNotesState(
         }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

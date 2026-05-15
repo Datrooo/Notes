@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import android.net.Uri
 import com.datrooo.notes.data.local.ImageStorage
 import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.domain.repository.NotesRepository
@@ -23,7 +24,7 @@ data class NoteEditorUiState(
     val content: List<NoteContentBlock> = listOf(NoteContentBlock.Text("")),
     val tags: String = "",
     val isLoading: Boolean = false,
-    val isExistingNote: Boolean = false
+    val isExistingNote: Boolean = false,
 ) {
     val canSave: Boolean
         get() = (title.isNotBlank() || content.any { block -> (block as? NoteContentBlock.Text)?.text?.isNotBlank() == true } || content.any { it is NoteContentBlock.Image }) &&
@@ -35,6 +36,7 @@ data class NoteEditorUiState(
 
     val hasTooLongTags: Boolean
         get() = tags.split(Regex("[,\\s]+"))
+            .asSequence()
             .map { it.trim().removePrefix("#") }
             .any { it.length > NoteEditorViewModel.MAX_TAG_LENGTH }
 }
@@ -132,6 +134,30 @@ class NoteEditorViewModel(
         _uiState.update { current ->
             current.copy(tags = tags)
         }
+    }
+
+    fun getTempCameraUri(): Uri {
+        return imageStorage.getTempCameraUri()
+    }
+
+    fun getShareableUri(uriString: String): Uri {
+        return imageStorage.getShareableUri(uriString)
+    }
+
+    fun getPreferredPackage(): String? {
+        return imageStorage.getPreferredPackage()
+    }
+
+    fun setPreferredPackage(packageName: String?) {
+        imageStorage.setPreferredPackage(packageName)
+    }
+
+    fun getAvailableViewers(): List<Pair<String, String>> {
+        return imageStorage.getAvailableViewers()
+    }
+
+    fun saveImageToGallery(uriString: String): Boolean {
+        return imageStorage.saveImageToGallery(uriString)
     }
 
     fun save(onSaved: () -> Unit) {

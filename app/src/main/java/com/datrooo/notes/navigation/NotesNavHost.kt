@@ -61,7 +61,7 @@ fun NotesNavHost(
                 ?: NotesDestination.EMPTY_NOTE_ID
 
             val viewModel: NoteDetailsViewModel = viewModel(
-                factory = NoteDetailsViewModel.factory(repository, noteId)
+                factory = NoteDetailsViewModel.factory(repository, imageStorage, noteId)
             )
 
             NoteDetailsScreen(

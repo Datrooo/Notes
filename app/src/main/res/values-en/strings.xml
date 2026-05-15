@@ -62,4 +62,11 @@
     <string name="exit_press_again">Press again to exit</string>
     <string name="note_content_header">Content</string>
     <string name="empty_content_desc">No note content.</string>
+    <string name="image_saved_to_gallery">Image saved to gallery</string>
+    <string name="image_save_failed">Failed to save image</string>
+    <string name="error_opening_image">Error opening image</string>
+    <string name="open_image">Open image</string>
+    <string name="select_viewer_title">Select viewer app</string>
+    <string name="remember_choice">Remember my choice</string>
+    <string name="reset_preferred_viewer">Reset preferred viewer</string>
 </resources>
