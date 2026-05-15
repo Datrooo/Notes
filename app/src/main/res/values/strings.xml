@@ -16,6 +16,8 @@
     <string name="delete">Удалить</string>
     <string name="edit">Редактировать</string>
     <string name="save">Сохранить изменения</string>
+    <string name="gallery">Галерея</string>
+    <string name="camera">Камера</string>
 
     <!-- Notes List -->
     <string name="my_notes">Мои заметки</string>
@@ -34,7 +36,7 @@
     <string name="empty_list_desc">Создай первую заметку через кнопку внизу экрана. Она сразу появится в списке и сохранится в базе.</string>
     <string name="clear_search">Сбросить поиск</string>
     <string name="search_by_title">Поиск по заголовку и тегам</string>
-    <string name="search_placeholder">Идеи, список дел или тег</string>
+    <string name="search_placeholder">Идеи, список дел или #тег</string>
     <string name="note_deleted_msg">Заметка «%1$s» удалена</string>
 
     <!-- Tags -->
@@ -64,4 +66,11 @@
     <string name="exit_press_again">Нажмите еще раз для выхода</string>
     <string name="note_content_header">Содержимое</string>
     <string name="empty_content_desc">Текст заметки отсутствует.</string>
+    <string name="image_saved_to_gallery">Изображение сохранено в галерею</string>
+    <string name="image_save_failed">Не удалось сохранить изображение</string>
+    <string name="error_opening_image">Ошибка при открытии изображения</string>
+    <string name="open_image">Открыть изображение</string>
+    <string name="select_viewer_title">Выберите приложение для просмотра</string>
+    <string name="remember_choice">Запомнить выбор</string>
+    <string name="reset_preferred_viewer">Сбросить выбор приложения</string>
 </resources>

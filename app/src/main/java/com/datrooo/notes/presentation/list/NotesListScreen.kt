@@ -213,6 +213,7 @@ fun NotesListScreen(
     }
 }
 
+
 @Composable
 private fun EmptyNotesState(
     searchQuery: String,
@@ -265,6 +266,7 @@ private fun EmptyNotesState(
         }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

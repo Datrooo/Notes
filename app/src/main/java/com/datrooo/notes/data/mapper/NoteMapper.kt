@@ -8,7 +8,7 @@ fun NoteEntity.toDomain(): Note {
         id = id,
         title = title,
         content = content,
-        tags = if (tags.isBlank()) emptyList() else tags.split(",").filter { it.isNotBlank() },
+        tags = tags,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -19,7 +19,7 @@ fun Note.toEntity(): NoteEntity {
         id = id,
         title = title,
         content = content,
-        tags = tags.joinToString(","),
+        tags = tags,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

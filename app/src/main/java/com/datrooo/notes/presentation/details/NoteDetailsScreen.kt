@@ -1,7 +1,10 @@
 package com.datrooo.notes.presentation.details
 
-import androidx.compose.foundation.layout.Box
+import android.content.Intent
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -11,12 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -33,13 +39,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.res.stringResource
+import coil3.compose.AsyncImage
 import com.datrooo.notes.R
+import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.presentation.components.NotesBackground
 import com.datrooo.notes.presentation.components.formatForUi
+import com.datrooo.notes.presentation.editor.AppSelectionDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -50,8 +61,56 @@ fun NoteDetailsScreen(
     onNoteDeleted: (com.datrooo.notes.navigation.DeletedNotePayload) -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    val showDeleteDialog = remember { mutableStateOf(value = false) }
-    var isTagsExpanded by remember { mutableStateOf(value = false) }
+    val showDeleteDialog = remember { mutableStateOf(false) }
+    var isTagsExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val showAppPicker = remember { mutableStateOf(false) }
+    val pendingUriToOpen = remember { mutableStateOf<android.net.Uri?>(null) }
+
+    val openImage = { uri: android.net.Uri ->
+        val preferred = viewModel.getPreferredPackage()
+        if (preferred != null) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "image/*")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    setPackage(preferred)
+                }
+                context.startActivity(intent)
+            } catch (_: Exception) {
+                viewModel.setPreferredPackage(null)
+                pendingUriToOpen.value = uri
+                showAppPicker.value = true
+            }
+        } else {
+            pendingUriToOpen.value = uri
+            showAppPicker.value = true
+        }
+    }
+
+    if (showAppPicker.value && pendingUriToOpen.value != null) {
+        AppSelectionDialog(
+            viewers = viewModel.getAvailableViewers(),
+            onAppSelected = { pkg, remember ->
+                if (remember) {
+                    viewModel.setPreferredPackage(pkg)
+                }
+                showAppPicker.value = false
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(pendingUriToOpen.value, "image/*")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    setPackage(pkg)
+                }
+                context.startActivity(intent)
+                pendingUriToOpen.value = null
+            },
+            onDismiss = { 
+                showAppPicker.value = false
+                pendingUriToOpen.value = null
+            }
+        )
+    }
 
     if (showDeleteDialog.value) {
         AlertDialog(
@@ -101,6 +160,17 @@ fun NoteDetailsScreen(
                     navigationIcon = {
                         TextButton(onClick = onNavigateBack) {
                             Text(text = stringResource(R.string.back))
+                        }
+                    },
+                    actions = {
+                        if (viewModel.getPreferredPackage() != null) {
+                            IconButton(onClick = { viewModel.setPreferredPackage(null) }) {
+                                Icon(
+                                    imageVector = Icons.Default.SettingsBackupRestore,
+                                    contentDescription = stringResource(R.string.reset_preferred_viewer),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 )
@@ -269,10 +339,46 @@ fun NoteDetailsScreen(
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Text(
-                                    text = note.content.ifBlank { stringResource(R.string.empty_content_desc) },
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                                note.content.forEach { block ->
+                                    when (block) {
+                                        is NoteContentBlock.Text -> {
+                                            if (block.text.isNotBlank()) {
+                                                Text(
+                                                    text = block.text,
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
+                                        }
+                                        is NoteContentBlock.Image -> {
+                                            Surface(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { 
+                                                        try {
+                                                            val shareableUri = viewModel.getShareableUri(block.uri)
+                                                            openImage(shareableUri)
+                                                        } catch (_: Exception) {
+                                                            Toast.makeText(context, R.string.error_opening_image, Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                shape = MaterialTheme.shapes.medium
+                                            ) {
+                                                AsyncImage(
+                                                    model = block.uri,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    contentScale = ContentScale.FillWidth
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                if (note.content.all { (it as? NoteContentBlock.Text)?.text?.isBlank() == true } && note.content.none { it is NoteContentBlock.Image }) {
+                                    Text(
+                                        text = stringResource(R.string.empty_content_desc),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
                             }
                         }
 

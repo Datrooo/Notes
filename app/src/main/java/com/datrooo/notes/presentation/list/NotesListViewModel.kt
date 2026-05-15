@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.datrooo.notes.domain.model.Note
+import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.domain.repository.NotesRepository
 import com.datrooo.notes.domain.usecase.GetNotesUseCase
 import com.datrooo.notes.domain.usecase.RestoreNoteUseCase
@@ -76,7 +77,10 @@ class NotesListViewModel(
                     true
                 } else {
                     note.title.contains(current.searchQuery, ignoreCase = true) ||
-                            note.tags.any { it.contains(current.searchQuery, ignoreCase = true) }
+                            note.tags.any { it.contains(current.searchQuery, ignoreCase = true) } ||
+                            note.content.any { block ->
+                                (block as? NoteContentBlock.Text)?.text?.contains(current.searchQuery, ignoreCase = true) == true
+                            }
                 }
 
                 val matchesTags = if (current.selectedTags.isEmpty()) {

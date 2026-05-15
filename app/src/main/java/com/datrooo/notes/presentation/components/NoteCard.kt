@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.datrooo.notes.R
 import com.datrooo.notes.domain.model.Note
+import com.datrooo.notes.domain.model.NoteContentBlock
 
 @Composable
 fun NoteCard(
@@ -30,6 +32,10 @@ fun NoteCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val previewText = note.content.filterIsInstance<NoteContentBlock.Text>()
+        .firstOrNull { it.text.isNotBlank() }?.text ?: stringResource(R.string.empty_note)
+    
+    val totalChars = note.content.sumOf { (it as? NoteContentBlock.Text)?.text?.length ?: 0 }
 
     ElevatedCard(
         modifier = modifier
@@ -61,13 +67,14 @@ fun NoteCard(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = note.content.ifBlank { stringResource(R.string.empty_note) },
+                text = previewText,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 18.dp),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            
             if (note.tags.isNotEmpty()) {
                 val displayTags = note.tags.take(3)
                 val remainingCount = note.tags.size - displayTags.size
@@ -77,7 +84,7 @@ fun NoteCard(
                         .fillMaxWidth()
                         .padding(horizontal = 18.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     displayTags.forEach { tag ->
                         AssistChip(
@@ -105,6 +112,7 @@ fun NoteCard(
                     }
                 }
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,8 +126,8 @@ fun NoteCard(
                     Text(
                         text = pluralStringResource(
                             id = R.plurals.char_count,
-                            count = note.content.length,
-                            note.content.length
+                            count = totalChars,
+                            totalChars
                         ),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelMedium,

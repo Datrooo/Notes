@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.datrooo.notes.domain.repository.NotesRepository
+import com.datrooo.notes.AppContainer
 import com.datrooo.notes.presentation.details.NoteDetailsScreen
 import com.datrooo.notes.presentation.details.NoteDetailsViewModel
 import com.datrooo.notes.presentation.editor.NoteEditorScreen
@@ -19,8 +19,11 @@ import com.datrooo.notes.presentation.list.NotesListViewModel
 @Composable
 fun NotesNavHost(
     navController: androidx.navigation.NavHostController = rememberNavController(),
-    repository: NotesRepository
+    appContainer: AppContainer
 ) {
+    val repository = appContainer.notesRepository
+    val imageStorage = appContainer.imageStorage
+
     NavHost(
         navController = navController,
         startDestination = NotesDestination.LIST_ROUTE
@@ -58,7 +61,7 @@ fun NotesNavHost(
                 ?: NotesDestination.EMPTY_NOTE_ID
 
             val viewModel: NoteDetailsViewModel = viewModel(
-                factory = NoteDetailsViewModel.factory(repository, noteId)
+                factory = NoteDetailsViewModel.factory(repository, imageStorage, noteId)
             )
 
             NoteDetailsScreen(
@@ -90,7 +93,7 @@ fun NotesNavHost(
             val noteId = rawNoteId.takeIf { it != NotesDestination.EMPTY_NOTE_ID }
 
             val viewModel: NoteEditorViewModel = viewModel(
-                factory = NoteEditorViewModel.factory(repository, noteId)
+                factory = NoteEditorViewModel.factory(repository, imageStorage, noteId)
             )
 
             NoteEditorScreen(

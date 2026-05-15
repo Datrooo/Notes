@@ -1,12 +1,13 @@
 package com.datrooo.notes.navigation
 
 import com.datrooo.notes.domain.model.Note
+import kotlinx.serialization.json.Json
 import java.io.Serializable
 
 data class DeletedNotePayload(
     val id: Long,
     val title: String,
-    val content: String,
+    val contentJson: String,
     val tags: List<String>,
     val createdAt: Long,
     val updatedAt: Long
@@ -15,7 +16,7 @@ data class DeletedNotePayload(
         return Note(
             id = id,
             title = title,
-            content = content,
+            content = Json.decodeFromString(contentJson),
             tags = tags,
             createdAt = createdAt,
             updatedAt = updatedAt
@@ -27,7 +28,7 @@ fun Note.toDeletedNotePayload(): DeletedNotePayload {
     return DeletedNotePayload(
         id = id,
         title = title,
-        content = content,
+        contentJson = Json.encodeToString(content),
         tags = tags,
         createdAt = createdAt,
         updatedAt = updatedAt
