@@ -50,8 +50,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
@@ -74,6 +77,9 @@ fun NoteEditorScreen(
     var tempCameraUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var showImageSourceMenu by remember { mutableStateOf(false) }
     
+    var lastFocusedBlockIndex by remember { mutableStateOf<Int?>(null) }
+    var lastCursorPosition by remember { mutableStateOf(0) }
+
     val showAppPicker = remember { mutableStateOf(false) }
     val pendingUriToOpen = remember { mutableStateOf<android.net.Uri?>(null) }
 
@@ -124,14 +130,14 @@ fun NoteEditorScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let { viewModel.addImageBlock(it.toString()) }
+        uri?.let { viewModel.addImageBlock(it.toString(), lastFocusedBlockIndex, lastCursorPosition) }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            tempCameraUri?.let { viewModel.addImageBlock(it.toString()) }
+            tempCameraUri?.let { viewModel.addImageBlock(it.toString(), lastFocusedBlockIndex, lastCursorPosition) }
         }
     }
 
@@ -273,18 +279,41 @@ fun NoteEditorScreen(
                         uiState.value.content.forEachIndexed { index, block ->
                             when (block) {
                                 is NoteContentBlock.Text -> {
-                                    OutlinedTextField(
-                                        value = block.text,
+                                    val textFieldValue = remember(block.text) {
+                                        mutableStateOf(
+                                            TextFieldValue(
+                                                text = block.text,
+                                                selection = if (lastFocusedBlockIndex == index) {
+                                                    TextRange(lastCursorPosition)
+                                                } else {
+                                                    TextRange.Zero
+                                                }
+                                            )
+                                        )
+                                    }
+                                    androidx.compose.material3.TextField(
+                                        value = textFieldValue.value,
                                         onValueChange = { 
-                                            viewModel.onContentBlockChanged(index, NoteContentBlock.Text(it)) 
+                                            textFieldValue.value = it
+                                            lastFocusedBlockIndex = index
+                                            lastCursorPosition = it.selection.start
+                                            viewModel.onContentBlockChanged(index, NoteContentBlock.Text(it.text)) 
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            if (index == 0) Text(text = stringResource(R.string.content_label))
-                                        },
+                                        modifier = Modifier.onFocusChanged {
+                                            if (it.isFocused) lastFocusedBlockIndex = index 
+                                        }.fillMaxWidth(),
                                         placeholder = {
-                                            if (index == 0) Text(text = stringResource(R.string.content_placeholder))
-                                        }
+                                            if (index == 0 && uiState.value.content.size == 1) {
+                                                Text(text = stringResource(R.string.content_placeholder))
+                                            }
+                                        },
+                                        colors = androidx.compose.material3.TextFieldDefaults.colors(
+                                            focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                            unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                            focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                                            unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                                        ),
+                                        textStyle = MaterialTheme.typography.bodyLarge
                                     )
                                 }
                                 is NoteContentBlock.Image -> {

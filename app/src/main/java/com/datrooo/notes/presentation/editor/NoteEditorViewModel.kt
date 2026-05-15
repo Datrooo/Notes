@@ -109,13 +109,29 @@ class NoteEditorViewModel(
         }
     }
 
-    fun addImageBlock(uri: String) {
+    fun addImageBlock(uri: String, atBlockIndex: Int? = null, atOffset: Int = 0) {
         viewModelScope.launch {
             val internalUri = imageStorage.saveImageToInternalStorage(uri) ?: return@launch
             _uiState.update { current ->
                 val newContent = current.content.toMutableList()
-                newContent.add(NoteContentBlock.Image(internalUri))
-                newContent.add(NoteContentBlock.Text(""))
+                
+                if (atBlockIndex != null && atBlockIndex < newContent.size) {
+                    val targetBlock = newContent[atBlockIndex]
+                    if (targetBlock is NoteContentBlock.Text) {
+                        val textBefore = targetBlock.text.substring(0, atOffset)
+                        val textAfter = targetBlock.text.substring(atOffset)
+                        
+                        newContent[atBlockIndex] = NoteContentBlock.Text(textBefore)
+                        newContent.add(atBlockIndex + 1, NoteContentBlock.Image(internalUri))
+                        newContent.add(atBlockIndex + 2, NoteContentBlock.Text(textAfter))
+                    } else {
+                        newContent.add(atBlockIndex + 1, NoteContentBlock.Image(internalUri))
+                        newContent.add(atBlockIndex + 2, NoteContentBlock.Text(""))
+                    }
+                } else {
+                    newContent.add(NoteContentBlock.Image(internalUri))
+                    newContent.add(NoteContentBlock.Text(""))
+                }
                 current.copy(content = newContent)
             }
         }
@@ -126,6 +142,15 @@ class NoteEditorViewModel(
             if (current.content.size <= 1) return@update current
             val newContent = current.content.toMutableList()
             newContent.removeAt(index)
+
+            if (index > 0 && index < newContent.size) {
+                val prevBlock = newContent[index - 1]
+                val nextBlock = newContent[index]
+                if (prevBlock is NoteContentBlock.Text && nextBlock is NoteContentBlock.Text) {
+                    newContent[index - 1] = NoteContentBlock.Text(prevBlock.text + nextBlock.text)
+                    newContent.removeAt(index)
+                }
+            }
             current.copy(content = newContent)
         }
     }
