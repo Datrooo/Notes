@@ -302,6 +302,30 @@ fun NoteEditorScreen(
                                 }
                             }
                         )
+                        OutlinedTextField(
+                            value = uiState.value.tags,
+                            onValueChange = viewModel::onTagsChanged,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = {
+                                Text(text = stringResource(R.string.tags_label))
+                            },
+                            placeholder = {
+                                Text(text = stringResource(R.string.tags_placeholder))
+                            },
+                            singleLine = true,
+                            isError = uiState.value.hasTooLongTags,
+                            supportingText = {
+                                if (uiState.value.hasTooLongTags) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.tag_too_long,
+                                            NoteEditorViewModel.MAX_TAG_LENGTH
+                                        ),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        )
                         Text(
                             text = stringResource(
                                 R.string.char_count_total,

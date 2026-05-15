@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import android.net.Uri
 import com.datrooo.notes.data.local.ImageStorage
 import com.datrooo.notes.domain.model.NoteContentBlock
 import com.datrooo.notes.domain.repository.NotesRepository
@@ -133,10 +132,6 @@ class NoteEditorViewModel(
         _uiState.update { current ->
             current.copy(tags = tags)
         }
-    }
-
-    fun getTempCameraUri(): Uri {
-        return imageStorage.getTempCameraUri()
     }
 
     fun save(onSaved: () -> Unit) {
