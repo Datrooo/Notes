@@ -36,7 +36,7 @@
     <string name="empty_list_desc">Создай первую заметку через кнопку внизу экрана. Она сразу появится в списке и сохранится в базе.</string>
     <string name="clear_search">Сбросить поиск</string>
     <string name="search_by_title">Поиск по заголовку и тегам</string>
-    <string name="search_placeholder">Идеи, список дел или #тег</string>
+    <string name="search_placeholder">Идеи, список дел или тег</string>
     <string name="note_deleted_msg">Заметка «%1$s» удалена</string>
 
     <!-- Tags -->
